@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/home}">
+            <span class="fs-4">✈️</span>
+            <span class="fw-bold">VietTicket</span>
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/home}">
+                        <i class="bi bi-house-door"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/flights/list}">
+                        <i class="bi bi-airplane"></i> Vé máy bay
+                    </a>
+                </li>
+                <!-- Chỉ ADMIN thấy menu quản lý -->
+                <li class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear"></i> Quản lý
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" th:href="@{/admin/dashboard}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/airlines}">
+                            <i class="bi bi-building"></i> Quản lý hãng bay
+                        </a></li>
+                        <li><a class="dropdown-item" th:href="@{/flights/add}">
+                            <i class="bi bi-plus-circle"></i> Thêm chuyến bay
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/bookings}">
+                            <i class="bi bi-list-check"></i> Tất cả đặt vé
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/users}">
+                            <i class="bi bi-people"></i> Quản lý người dùng
+                        </a></li>
+                    </ul>
+                </li>
+                <!-- Lịch sử đặt vé -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/bookings/my-bookings}">
+                        <i class="bi bi-ticket-perforated"></i> Vé của tôi
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link text-light" th:href="@{/profile}">
+                        <i class="bi bi-person-circle"></i>
+                        <strong sec:authentication="name"></strong>
+                        <span sec:authorize="hasRole('ADMIN')"
+                              class="badge bg-danger ms-1">ADMIN</span>
+                        <span sec:authorize="hasRole('USER') and !hasRole('ADMIN')"
+                              class="badge bg-info ms-1">USER</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/auth/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-outline-light btn-sm me-2" th:href="@{/auth/login}">
+                        Đăng nhập
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-warning btn-sm" th:href="@{/auth/register}">
+                        Đăng ký
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

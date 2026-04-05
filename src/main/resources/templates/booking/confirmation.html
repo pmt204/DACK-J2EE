@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xác nhận đặt vé - VietTicket</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container mt-5 flex-grow-1">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Header -->
+            <div class="text-center mb-4">
+                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+                     style="width: 80px; height: 80px;">
+                    <i class="bi bi-check-lg fs-1"></i>
+                </div>
+                <h2 class="fw-bold mt-3 text-success">Đặt vé thành công!</h2>
+                <p class="text-muted">Mã đặt chỗ: <strong class="text-primary fs-4">#<span th:text="${booking.id}"></span></strong></p>
+                <span class="badge fs-6"
+                      th:classappend="${booking.tripType == 'ROUND_TRIP'} ? 'bg-info' : 'bg-secondary'"
+                      th:text="${booking.tripType == 'ROUND_TRIP'} ? '🔄 Vé khứ hồi' : '➡ Vé một chiều'">
+                </span>
+            </div>
+
+            <!-- Booking Details Card -->
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-airplane"></i> Chuyến bay đi</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${booking.flight != null}" class="row mb-3">
+                        <div class="col-md-5 text-center">
+                            <div class="fs-4 fw-bold" th:text="${booking.flight.origin}"></div>
+                            <div class="text-muted" th:text="${#temporals.format(booking.flight.departureTime, 'HH:mm dd/MM/yyyy')}"></div>
+                        </div>
+                        <div class="col-md-2 text-center d-flex align-items-center justify-content-center">
+                            <div>
+                                <i class="bi bi-airplane fs-3 text-primary"></i>
+                                <div class="small text-muted" th:text="${booking.flight.flightNumber}"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-center">
+                            <div class="fs-4 fw-bold" th:text="${booking.flight.destination}"></div>
+                            <div class="text-muted" th:text="${#temporals.format(booking.flight.arrivalTime, 'HH:mm dd/MM/yyyy')}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chuyến bay về (nếu khứ hồi) -->
+            <div th:if="${booking.returnFlight != null}" class="card shadow-sm border-info mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-arrow-return-left"></i> Chuyến bay về</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-center">
+                            <div class="fs-4 fw-bold" th:text="${booking.returnFlight.origin}"></div>
+                            <div class="text-muted" th:text="${#temporals.format(booking.returnFlight.departureTime, 'HH:mm dd/MM/yyyy')}"></div>
+                        </div>
+                        <div class="col-md-2 text-center d-flex align-items-center justify-content-center">
+                            <div>
+                                <i class="bi bi-airplane fs-3 text-info"></i>
+                                <div class="small text-muted" th:text="${booking.returnFlight.flightNumber}"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-center">
+                            <div class="fs-4 fw-bold" th:text="${booking.returnFlight.destination}"></div>
+                            <div class="text-muted" th:text="${#temporals.format(booking.returnFlight.arrivalTime, 'HH:mm dd/MM/yyyy')}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin hành khách + chi tiết -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">Thông tin hành khách</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td class="text-muted"><i class="bi bi-person"></i> Họ tên:</td>
+                                    <td class="fw-bold" th:text="${booking.passengerName}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted"><i class="bi bi-envelope"></i> Email:</td>
+                                    <td th:text="${booking.passengerEmail}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted"><i class="bi bi-telephone"></i> SĐT:</td>
+                                    <td th:text="${booking.passengerPhone}"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">Chi tiết đặt vé</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr th:if="${booking.flight != null}">
+                                    <td class="text-muted">Hãng bay:</td>
+                                    <td class="fw-bold" th:text="${booking.flight.airline.airlineName}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Số ghế:</td>
+                                    <td class="fw-bold" th:text="${booking.seatCount}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Hạng ghế:</td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${booking.seatClass == 'BUSINESS'} ? 'bg-warning text-dark' : 'bg-secondary'"
+                                              th:text="${booking.seatClass == 'BUSINESS'} ? 'Thương gia' : 'Phổ thông'">
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Ngày đặt:</td>
+                                    <td th:text="${#temporals.format(booking.bookingDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Trạng thái:</td>
+                                    <td><span class="badge bg-success">Đã xác nhận</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Total Price -->
+                    <div class="text-center py-3 bg-light rounded">
+                        <div class="text-muted">Tổng thanh toán</div>
+                        <div class="fs-2 fw-bold text-danger"
+                             th:text="${#numbers.formatDecimal(booking.totalPrice, 1, 'POINT', 0, 'COMMA')} + ' ₫'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="text-center mt-4 mb-5">
+                <a th:href="@{/bookings/my-bookings}" class="btn btn-primary btn-lg me-2">
+                    <i class="bi bi-ticket-perforated"></i> Xem vé của tôi
+                </a>
+                <a th:href="@{/flights/list}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-airplane"></i> Đặt thêm vé
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-3 text-center mt-auto">
+    <small class="text-muted">&copy; 2025 VietTicket</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
