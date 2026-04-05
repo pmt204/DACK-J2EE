@@ -17,12 +17,11 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Cấu hình Spring Security cho toàn bộ ứng dụng.
  *
- *  * @EnableWebSecurity   : kích hoạt Spring Security
- * 
- * @EnableMethodSecurity: cho phép dùng @PreAutho
- *                     */
-@Configuration 
- *                    @EnableWebSecurity
+ * @EnableWebSecurity   : kích hoạt Spring Security
+ * @EnableMethodSecurity: cho phép dùng @PreAuthorize trên method
+ */
+@Configuration
+@EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
