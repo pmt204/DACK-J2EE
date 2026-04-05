@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Cấu hình Spring Security cho toàn bộ ứng dụng.
  *
- * @EnableWebSecurity : kích hoạt Spring Security
+ * @EnableWebSecurity   : kích hoạt Spring Security
  * @EnableMethodSecurity: cho phép dùng @PreAuthorize trên method
  */
 @Configuration
@@ -54,15 +54,15 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-}
+    }
 
-/
-
-  
-
-   @   
-
-henticationProvider(authenticationProvider())
+    /**
+     * Cấu hình filter chain: định nghĩa quy tắc phân quyền URL, form login, logout.
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
                 // ===== Public URLs - không cần đăng nhập =====
                 .requestMatchers(
@@ -105,7 +105,9 @@ henticationProvider(authenticationProvider())
                 .permitAll()
             )
             // ===== Xử lý 403 Access Denied =====
-            .exceptionHandli
+            .exceptionHandling(ex -> ex
+                .accessDeniedPage("/access-denied")
+            );
 
         return http.build();
     }

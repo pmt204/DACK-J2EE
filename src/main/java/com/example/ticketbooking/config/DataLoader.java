@@ -1,6 +1,7 @@
 package com.example.ticketbooking.config;
 
-import com.example.ticketbooking.entitimport com.example.ticketbooking.repository.*;
+import com.example.ticketbooking.entity.*;
+import com.example.ticketbooking.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -19,83 +20,291 @@ import java.util.Set;
  */
 @Component
 @RequiredArgsConstructor
-@Slf4j        
+@Slf4j
+public class DataLoader implements CommandLineRunner {
 
-ate final AirlineRepository airlineRepositorate final FlightRepository flightRepository;private final PasswordEncoder passwordEncoder;@Override
+    private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final AirlineRepository airlineRepository;
+    private final FlightRepository flightRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    initR     initUsers();i
+    @Override
+    public void run(String... args) {
+        initRoles();
+        initUsers();
+        initAirlinesAndFlights();
+    }
 
-pository.sv
+    private void initRoles() {
+        if (roleRepository.count() == 0) {
+            roleRepository.save(new Role("ROLE_ADMIN"));
+            roleRepository.save(new Role("ROLE_USER"));
+            log.info(">>> Đã khởi tạo roles: ROLE_ADMIN, ROLE_USER");
+        }
+    }
 
- 
+    private void initUsers() {
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setEmail("admin@ticketbooking.vn");
+            admin.setEnabled(true);
+            Set<Role> adminRoles = new HashSet<>();
+            roleRepository.findByName("ROLE_ADMIN").ifPresent(adminRoles::add);
+            admin.setRoles(adminRoles);
+            userRepository.save(admin);
+            log.info(">>> Tài khoản ADMIN: username=admin | password=admin123");
+        }
 
-        User admin = newU   admin.setUsername("admin");admin.setPsword(passwoadmin.setEmail("admin@tickeadmin.setEnabled(true);Set<Role> adminRoles = new HashSet<>();roleRepository.findByNaadmin.setoles(adminoes);userRepository.save(admin);log.info(">>> Tài khoản ADMi
+        if (!userRepository.existsByUsername("user1")) {
+            User user = new User();
+            user.setUsername("user1");
+            user.setPassword(passwordEncoder.encode("user123"));
+            user.setEmail("user1@example.com");
+            user.setEnabled(true);
+            Set<Role> userRoles = new HashSet<>();
+            roleRepository.findByName("ROLE_USER").ifPresent(userRoles::add);
+            user.setRoles(userRoles);
+            userRepository.save(user);
+            log.info(">>> Tài khoản USER: username=user1 | password=user123");
+        }
+    }
 
-   user.setUsername("user1");user.setPsword(passwouser.setEmail("user1@exampuser.setEnabled(true);Set<Role> userRoles = new HashSet<>roleRepository.findByNuser.setRles(userRls);userRepository.save(user);
+    private void initAirlinesAndFlights() {
+        if (airlineRepository.count() > 0) {
+            log.info("Hãng bay đã tồn tại, bỏ qua import chuyến bay.");
+            return;
+        }
 
-        log.info("Hãng bay đã tồn tại    r
+        log.info("=== BẮT ĐẦU IMPORT DỮ LIỆU MẪU ===");
 
-// ===== 1. Tạo hãng bay =====
+        // ===== 1. Tạo hãng bay =====
+        Airline vna = createAirline("VN", "Vietnam Airlines", "Việt Nam");
+        Airline vj  = createAirline("VJ", "Vietjet Air", "Việt Nam");
+        Airline qh  = createAirline("QH", "Bamboo Airways", "Việt Nam");
+        Airline bl  = createAirline("BL", "Pacific Airlines", "Việt Nam");
+        Airline vu  = createAirline("VU", "Vietravel Airlines", "Việt Nam");
+        Airline sq  = createAirline("SQ", "Singapore Airlines", "Singapore");
+        Airline tg  = createAirline("TG", "Thai Airways", "Thái Lan");
 
-Airline vj  = createAirline("V
-Airline qh =createAirline("QH","Bamboo Airways", "iệt Nam");Airline bl=createAirline("BL","Pacific Airlies", "Việt NAirline vu=createAirline("VU","Vietravel Airlins", "Việt NaAirline sq=createAirline("SQ","Singapore Airlines, "SingaporeAirline tg=createAirline("TG","Thai Airways", "TháiLan");// ===== 2To chuyến bay — nhiề ngày khác nhau=====
+        // ===== 2. Tạo chuyến bay — nhiều ngày khác nhau =====
+        LocalDateTime now = LocalDateTime.now();
 
+        // --- Hà Nội → TP.HCM (nhiều hãng, nhiều ngày) ---
+        createFlight("VN100", vna, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(1).withHour(6).withMinute(0),
+                now.plusDays(1).withHour(8).withMinute(10),
+                new BigDecimal("1500000"), 120);
+        createFlight("VN102", vna, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(1).withHour(14).withMinute(30),
+                now.plusDays(1).withHour(16).withMinute(40),
+                new BigDecimal("1600000"), 100);
+        createFlight("VJ201", vj, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(2).withHour(7).withMinute(0),
+                now.plusDays(2).withHour(9).withMinute(15),
+                new BigDecimal("990000"), 180);
+        createFlight("VJ203", vj, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(2).withHour(19).withMinute(0),
+                now.plusDays(2).withHour(21).withMinute(10),
+                new BigDecimal("890000"), 180);
+        createFlight("QH301", qh, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(3).withHour(8).withMinute(30),
+                now.plusDays(3).withHour(10).withMinute(45),
+                new BigDecimal("1200000"), 150);
+        createFlight("BL401", bl, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(4).withHour(10).withMinute(0),
+                now.plusDays(4).withHour(12).withMinute(15),
+                new BigDecimal("850000"), 140);
+        createFlight("VU501", vu, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(5).withHour(9).withMinute(0),
+                now.plusDays(5).withHour(11).withMinute(10),
+                new BigDecimal("950000"), 130);
 
-// --- Hà Nội → T.CM (nhiều hãng, nhiề
+        // --- TP.HCM → Hà Nội (chiều ngược - cho khứ hồi) ---
+        createFlight("VN101", vna, "TP. Hồ Chí Minh", "Hà Nội",
+                now.plusDays(3).withHour(17).withMinute(0),
+                now.plusDays(3).withHour(19).withMinute(10),
+                new BigDecimal("1500000"), 120);
+        createFlight("VJ202", vj, "TP. Hồ Chí Minh", "Hà Nội",
+                now.plusDays(4).withHour(6).withMinute(30),
+                now.plusDays(4).withHour(8).withMinute(45),
+                new BigDecimal("990000"), 180);
+        createFlight("QH302", qh, "TP. Hồ Chí Minh", "Hà Nội",
+                now.plusDays(5).withHour(14).withMinute(0),
+                now.plusDays(5).withHour(16).withMinute(15),
+                new BigDecimal("1250000"), 150);
+        createFlight("VN103", vna, "TP. Hồ Chí Minh", "Hà Nội",
+                now.plusDays(6).withHour(20).withMinute(0),
+                now.plusDays(6).withHour(22).withMinute(10),
+                new BigDecimal("1700000"), 100);
 
-        now.plusDays(1).withHour(6).withMinute(0),
-        now.plusDays().wihHour(8).ithMinute(10),new BigDecimal("1500000"), 120);ight("VN102", vna, "Hà Nội", "TP. Hồ Chí Minow.plusDays(1).withHour(1).wit        now.plusDays().wihHour(16)withMinute(40),new BigDecimal("1600000"), 100);ight("VJ201", vj, "Hà Nội", "TP. Hồ Chí Minhnow.plusDays(2).withHour(7.with        now.plusDays().wthHour(9)withMinute(15),new BigDecimal("990000"), 180);ight("VJ203", vj, "Hà Nội", "TP. Hồ Chí Minnow.plusDays(2).withHour(9).wi        now.plusDays().wthHour(21.withMinute(10),new BigDecimal("890000"), 180);ight("QH301", qh, "Hà Nội", "TP. Hồ Chí Minhnow.plusDays(3).withHour().wit        now.plusDays().wthHour(10.withMinute(45),new BigDecimal("1200000"), 150);ight("BL401", bl, "Hà Nội", "TP. Hồ Chí Minhnow.plusDays(4).withHour(1).wit        now.plusDays().wthHour(12.withMinute(15),new BigDecimal("850000"), 140);ight("VU501", vu, "Hà Nội", "TP. Hồ Chí Minhnow.plusDays(5).withHour().wit        now.plusDays().wthHour(11.withMinute(10),new BigDecimal("950000"), 130);
+        // --- Hà Nội → Đà Nẵng ---
+        createFlight("VN110", vna, "Hà Nội", "Đà Nẵng",
+                now.plusDays(1).withHour(8).withMinute(0),
+                now.plusDays(1).withHour(9).withMinute(20),
+                new BigDecimal("1100000"), 130);
+        createFlight("VJ210", vj, "Hà Nội", "Đà Nẵng",
+                now.plusDays(2).withHour(11).withMinute(30),
+                now.plusDays(2).withHour(12).withMinute(50),
+                new BigDecimal("750000"), 180);
+        createFlight("QH310", qh, "Hà Nội", "Đà Nẵng",
+                now.plusDays(3).withHour(15).withMinute(0),
+                now.plusDays(3).withHour(16).withMinute(20),
+                new BigDecimal("1050000"), 150);
 
-        now.plusDays(3).withHour(17).withMinute(0),
-        now.plusDays().wihHour(19).withMinue(10),new BigDecimal("1500000"), 120);ight("VJ202", vj, "TP. Hồ Chí Minh", "Hà Nộinow.plusDays(4).withHour(6.with        now.plusDays().wthHour(8).withMinue(45),new BigDecimal("990000"), 180);ight("QH302", qh, "TP. Hồ Chí Minh", "Hà Nộnow.plusDays(5).withHour(4).wi        now.plusDays().wthHour(16).withMinte(15),new BigDecimal("1250000"), 150);ight("VN103", vna, "TP. Hồ Chí Minh", "Hà Nộnow.plusDays(6).withHour(2).wit        now.plusDays().wihHour(22).withMinue(10),new BigDecimal("1700000"), 100);à Nội → Đà Nẵng ---
+        // --- Đà Nẵng → Hà Nội ---
+        createFlight("VN111", vna, "Đà Nẵng", "Hà Nội",
+                now.plusDays(5).withHour(10).withMinute(0),
+                now.plusDays(5).withHour(11).withMinute(20),
+                new BigDecimal("1100000"), 130);
+        createFlight("VJ211", vj, "Đà Nẵng", "Hà Nội",
+                now.plusDays(6).withHour(16).withMinute(0),
+                now.plusDays(6).withHour(17).withMinute(20),
+                new BigDecimal("780000"), 180);
 
-        now.plusDays(1).wit
-        now.plusDays().wihHour(9).ithMinute(new BigDecimal("1100000"), 130);ight("VJ210", vj, "Hà Nội", "Đà Nẵng",now.plusDays(2).withHour(1).wit        now.plusDays().wthHour(12.withMinutnew BigDecimal("750000"), 180);ight("QH310", qh, "Hà Nội", "Đà Nẵng",now.plusDays(3).withHour(5).wi        now.plusDays().wthHour(16.withMinutnew BigDecimal("1050000"), 150);à Nẵng → Hà Nội ---
+        // --- TP.HCM → Đà Nẵng ---
+        createFlight("VN120", vna, "TP. Hồ Chí Minh", "Đà Nẵng",
+                now.plusDays(1).withHour(9).withMinute(30),
+                now.plusDays(1).withHour(10).withMinute(50),
+                new BigDecimal("1050000"), 120);
+        createFlight("VJ220", vj, "TP. Hồ Chí Minh", "Đà Nẵng",
+                now.plusDays(3).withHour(13).withMinute(0),
+                now.plusDays(3).withHour(14).withMinute(20),
+                new BigDecimal("690000"), 180);
 
-        now.plusDays(5).wit
-        now.plusDays().wihHour(11).ithMinutenew BigDecimal("1100000"), 130);ight("VJ211", vj, "Đà Nẵng", "Hà Nội",now.plusDays(6).withHour(1).wit        now.plusDays().wthHour(17)withMinutnew BigDecimal("780000"), 180);P.HCM → Đà Nẵng ---
+        // --- Đà Nẵng → TP.HCM ---
+        createFlight("VN121", vna, "Đà Nẵng", "TP. Hồ Chí Minh",
+                now.plusDays(5).withHour(18).withMinute(0),
+                now.plusDays(5).withHour(19).withMinute(20),
+                new BigDecimal("1050000"), 120);
+        createFlight("VJ221", vj, "Đà Nẵng", "TP. Hồ Chí Minh",
+                now.plusDays(7).withHour(7).withMinute(0),
+                now.plusDays(7).withHour(8).withMinute(20),
+                new BigDecimal("720000"), 180);
 
-        now.plusDays(1).wit
-        now.plusDays().wihHour(10).withMinue(50),new BigDecimal("1050000"), 120);ight("VJ220", vj, "TP. Hồ Chí Minh", "Đà Nẵnnow.plusDays(3).withHour(1).wit        now.plusDays().wthHour(14).withMinte(20),new BigDecimal("690000"), 180);à Nẵng → TP.HCM ---
+        // --- Hà Nội → Phú Quốc ---
+        createFlight("VN130", vna, "Hà Nội", "Phú Quốc",
+                now.plusDays(2).withHour(7).withMinute(0),
+                now.plusDays(2).withHour(9).withMinute(30),
+                new BigDecimal("1800000"), 100);
+        createFlight("VJ230", vj, "Hà Nội", "Phú Quốc",
+                now.plusDays(4).withHour(12).withMinute(0),
+                now.plusDays(4).withHour(14).withMinute(30),
+                new BigDecimal("1200000"), 180);
 
-        now.plusDays(5).wit
-        now.plusDays().wihHour(19).ithMinute(20),new BigDecimal("1050000"), 120);ight("VJ221", vj, "Đà Nẵng", "TP. Hồ Chí Minnow.plusDays(7).withHour(7.with        now.plusDays().wthHour(8).ithMinute(20),new BigDecimal("720000"), 180);à Nội → Phú Quốc ---
+        // --- Phú Quốc → Hà Nội ---
+        createFlight("VN131", vna, "Phú Quốc", "Hà Nội",
+                now.plusDays(7).withHour(15).withMinute(0),
+                now.plusDays(7).withHour(17).withMinute(30),
+                new BigDecimal("1850000"), 100);
 
-        now.plusDays(2).with
-        now.plusDays().wihHour(9).ithMinute(3new BigDecimal("1800000"), 100);ight("VJ230", vj, "Hà Nội", "Phú Quốc",now.plusDays(4).withHour(1).wit        now.plusDays().wthHour(14.withMinutenew BigDecimal("1200000"), 180);hú Quốc → Hà Nội ---
+        // --- TP.HCM → Nha Trang ---
+        createFlight("VJ240", vj, "TP. Hồ Chí Minh", "Nha Trang",
+                now.plusDays(1).withHour(8).withMinute(0),
+                now.plusDays(1).withHour(9).withMinute(0),
+                new BigDecimal("590000"), 180);
+        createFlight("VN140", vna, "TP. Hồ Chí Minh", "Nha Trang",
+                now.plusDays(3).withHour(10).withMinute(30),
+                now.plusDays(3).withHour(11).withMinute(30),
+                new BigDecimal("850000"), 120);
 
-        now.plusDays(7).with
-        now.plusDays().wihHour(17).wthMinute(new BigDecimal("1850000"), 100);P.HCM → Nha Trang ---
+        // --- Nha Trang → TP.HCM ---
+        createFlight("VJ241", vj, "Nha Trang", "TP. Hồ Chí Minh",
+                now.plusDays(5).withHour(16).withMinute(0),
+                now.plusDays(5).withHour(17).withMinute(0),
+                new BigDecimal("620000"), 180);
 
-        now.plusDays(1).withH
-        now.plusDays().wthHour(9).withMinue(0),new BigDecimal("590000"), 180);ight("VN140", vna, "TP. Hồ Chí Minh", "Nhanow.plusDays(3).withHour(0).wi        now.plusDays().wihHour(11).withMinue(30),new BigDecimal("850000"), 120);ha Trang → TP.HCM ---
+        // --- Hà Nội → Huế ---
+        createFlight("VN150", vna, "Hà Nội", "Huế",
+                now.plusDays(2).withHour(14).withMinute(0),
+                now.plusDays(2).withHour(15).withMinute(10),
+                new BigDecimal("900000"), 100);
 
-        now.plusDays(5).withH
-        now.plusDays().wthHour(17).wthMinute(0),new BigDecimal("620000"), 180);à Nội → Huế ---
+        // --- Huế → Hà Nội ---
+        createFlight("VN151", vna, "Huế", "Hà Nội",
+                now.plusDays(6).withHour(8).withMinute(0),
+                now.plusDays(6).withHour(9).withMinute(10),
+                new BigDecimal("920000"), 100);
 
-        now.plusDays(2)
-        now.plusDays().wihHour(15)withMinew BigDecimal("900000"), 100);uế → Hà Nội ---
+        // --- Quốc tế: TP.HCM → Singapore ---
+        createFlight("SQ177", sq, "TP. Hồ Chí Minh", "Singapore",
+                now.plusDays(3).withHour(9).withMinute(0),
+                now.plusDays(3).withHour(12).withMinute(0),
+                new BigDecimal("3500000"), 80);
+        createFlight("VN500", vna, "TP. Hồ Chí Minh", "Singapore",
+                now.plusDays(5).withHour(14).withMinute(0),
+                now.plusDays(5).withHour(17).withMinute(0),
+                new BigDecimal("3200000"), 90);
 
-        now.plusDays(6)
-        now.plusDays().wihHour().withMinnew BigDecimal("920000"), 100);uốc tế: TP.HCM → Singapor ---
+        // --- Singapore → TP.HCM ---
+        createFlight("SQ178", sq, "Singapore", "TP. Hồ Chí Minh",
+                now.plusDays(7).withHour(10).withMinute(0),
+                now.plusDays(7).withHour(13).withMinute(0),
+                new BigDecimal("3600000"), 80);
 
-        now.plusDays(3).withHour(9).wi
-        now.plusDays().wthHour(12).withMinte(0),new BigDecimal("3500000"), 80);ight("VN500", vna, "TP. Hồ Chí Minh", "Singnow.plusDays(5).withHour(1).wi        now.plusDays().wihHour(17).withMinue(0),new BigDecimal("3200000"), 90);ingapore → TP.HCM ---
+        // --- Hà Nội → Bangkok ---
+        createFlight("TG561", tg, "Hà Nội", "Bangkok",
+                now.plusDays(4).withHour(8).withMinute(0),
+                now.plusDays(4).withHour(10).withMinute(30),
+                new BigDecimal("2800000"), 70);
+        createFlight("VJ600", vj, "Hà Nội", "Bangkok",
+                now.plusDays(6).withHour(11).withMinute(0),
+                now.plusDays(6).withHour(13).withMinute(30),
+                new BigDecimal("2100000"), 180);
 
-        now.plusDays(7).withH
-        now.plusDays().wthHour(13).wthMinute(0),new BigDecimal("3600000"), 80);à Nội → Bangkok ---
+        // --- Bangkok → Hà Nội ---
+        createFlight("TG562", tg, "Bangkok", "Hà Nội",
+                now.plusDays(8).withHour(15).withMinute(0),
+                now.plusDays(8).withHour(17).withMinute(30),
+                new BigDecimal("2900000"), 70);
 
-        now.plusDays(4).wit
-        now.plusDays().wthHour(10.withMinutnew BigDecimal("2800000"), 70);ight("VJ600", vj, "Hà Nội", "Bangkok",now.plusDays(6).withHour(1).wi        now.plusDays().wthHour(13.withMinutnew BigDecimal("2100000"), 180);angkok → Hà Nội ---
+        // --- Thêm chuyến tuần sau ---
+        createFlight("VN104", vna, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(7).withHour(6).withMinute(0),
+                now.plusDays(7).withHour(8).withMinute(10),
+                new BigDecimal("1550000"), 120);
+        createFlight("VJ205", vj, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(8).withHour(7).withMinute(30),
+                now.plusDays(8).withHour(9).withMinute(40),
+                new BigDecimal("950000"), 180);
+        createFlight("QH303", qh, "Hà Nội", "TP. Hồ Chí Minh",
+                now.plusDays(9).withHour(10).withMinute(0),
+                now.plusDays(9).withHour(12).withMinute(15),
+                new BigDecimal("1150000"), 150);
+        createFlight("VN105", vna, "TP. Hồ Chí Minh", "Hà Nội",
+                now.plusDays(10).withHour(16).withMinute(0),
+                now.plusDays(10).withHour(18).withMinute(10),
+                new BigDecimal("1650000"), 110);
 
-        now.plusDays(8).wit
-        now.plusDays().wthHour(17)withMinutnew BigDecimal("2900000"), 70);hêm chuyến tuần sau ---
+        log.info("=== IMPORT XONG: {} hãng bay, {} chuyến bay ===",
+                airlineRepository.count(), flightRepository.count());
+    }
 
-        now.plusDays(7).withHou
-        now.plusDays().wihHour(8).ithMinute(10),new BigDecimal("1550000"), 120);ight("VJ205", vj, "Hà Nội", "TP. Hồ Chí Minnow.plusDays(8).withHour(7.with        now.plusDays().wthHour(9)withMinute(40),new BigDecimal("950000"), 180);ight("QH303", qh, "Hà Nội", "TP. Hồ Chí Minnow.plusDays(9).withHour(0).wi        now.plusDays().wthHour(12.withMinute(15),new BigDecimal("1150000"), 150);ight("VN105", vna, "TP. Hồ Chí Minh", "Hà Nộnow.plusDays(10).withHour(6).wi        now.plusDays(0).wthHour(18).withMinte(10),new BigDecimal("1650000"), 110);("=== IMPORT XONG: {} hãngbay, 
+    private Airline createAirline(String code, String name, String country) {
+        Airline airline = new Airline();
+        airline.setAirlineCode(code);
+        airline.setAirlineName(name);
+        airline.setCountry(country);
+        airline.setStatus("ACTIVE");
+        return airlineRepository.save(airline);
+    }
 
-
-
-    airline.setAirlineCode(code);airline.setAirlnName(name);airline.setCountry(country);airline.setStatus("ACTIVE");return airlineRepository.sav
-
- 
+    private void createFlight(String flightNumber, Airline airline,
+                               String origin, String destination,
+                               LocalDateTime departure, LocalDateTime arrival,
+                               BigDecimal price, int seats) {
+        Flight flight = new Flight();
+        flight.setFlightNumber(flightNumber);
+        flight.setAirline(airline);
+        flight.setOrigin(origin);
+        flight.setDestination(destination);
+        flight.setDepartureTime(departure);
+        flight.setArrivalTime(arrival);
+        flight.setPrice(price);
+        flight.setAvailableSeats(seats);
+        flight.setStatus("AVAILABLE");
+        flightRepository.save(flight);
+    }
+}
