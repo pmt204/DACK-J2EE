@@ -1,0 +1,175 @@
+/* =====================================================
+   VietTicket - Custom CSS
+   ===================================================== */
+
+/* ===== Global ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== Navbar gradient ===== */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+}
+
+/* ===== Hero Section ===== */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 380px;
+    display: flex;
+    align-items: center;
+}
+
+.hero-icons span {
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+    margin: 0 10px;
+}
+
+.hero-icons span:nth-child(2) {
+    animation-delay: 1.5s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* ===== Card hover effects ===== */
+.flight-card, .train-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.flight-card:hover, .train-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.flight-list-card, .train-list-card {
+    transition: box-shadow 0.2s ease;
+    border-radius: 10px;
+}
+
+.flight-list-card:hover, .train-list-card:hover {
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.15) !important;
+}
+
+/* ===== Pagination ===== */
+.page-link {
+    color: #0d6efd;
+    border-radius: 6px !important;
+    margin: 0 2px;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* ===== Form control focus ===== */
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* ===== Alert ===== */
+.alert {
+    border-radius: 10px;
+}
+
+/* ===== Badge ===== */
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* ===== Card ===== */
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-radius: 0 !important;
+    font-weight: 600;
+}
+
+/* ===== Table ===== */
+.table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.04);
+}
+
+/* ===== Button ===== */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* ===== Stat cards ===== */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-warning,
+.card.bg-info {
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.card.bg-primary:hover,
+.card.bg-success:hover,
+.card.bg-warning:hover,
+.card.bg-info:hover {
+    transform: translateY(-3px);
+}
+
+/* ===== Booking status ===== */
+.booking-confirmed {
+    border-left: 4px solid #198754;
+}
+
+.booking-cancelled {
+    border-left: 4px solid #dc3545;
+}
+
+/* ===== Footer ===== */
+footer {
+    margin-top: auto;
+}
+
+/* ===== Responsive adjustments ===== */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 280px;
+        padding: 2rem 0;
+    }
+
+    .flight-list-card .col-md-2,
+    .flight-list-card .col-md-5,
+    .flight-list-card .col-md-3 {
+        border: none !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ===== Custom scrollbar ===== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0d6efd;
+    border-radius: 3px;
+}
