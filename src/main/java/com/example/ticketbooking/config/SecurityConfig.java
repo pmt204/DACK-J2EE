@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Cấu hình Spring Security cho toàn bộ ứng dụng.
  *
- * @EnableWebSecurity   : kích hoạt Spring Security
+ * @EnableWebSecurity : kích hoạt Spring Security
  * @EnableMethodSecurity: cho phép dùng @PreAuthorize trên method
  */
 @Configuration
@@ -62,52 +62,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authenticationProvider(authenticationProvider())
-            .authorizeHttpRequests(auth -> auth
-                // ===== Public URLs - không cần đăng nhập =====
-                .requestMatchers(
-                    "/", "/home",
-                    "/auth/login", "/auth/register", "/auth/forgot-password",
-                    "/css/**", "/js/**", "/images/**", "/favicon.ico"
-                ).permitAll()
+                .authenticationProvider(authenticationProvider())
+                .authorizeHttpRequests(auth -> auth
+                        // ===== Public URLs - không cần đăng nhập =====
+                        .requestMatchers(
+                                "/", "/home",
+                                "/auth/login", "/auth/register", "/auth/forgot-password",
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico")
+                        .permitAll()
 
-                // ===== ADMIN only =====
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                // ===== Thêm/Sửa/Xóa chuyến bay: chỉ ADMIN =====
-                .requestMatchers("/flights/add", "/flights/edit/**", "/flights/delete/**").hasRole("ADMIN")
-
-                // ===== Xem danh sách chuyến bay: cả USER và ADMIN =====
-                .requestMatchers("/flights/list", "/flights", "/flights/search").hasAnyRole("ADMIN", "USER")
-
-                // ===== Đặt vé, xem booking, hồ sơ, đổi mật khẩu: USER và ADMIN =====
-                .requestMatchers("/bookings/**", "/profile", "/profile/**").hasAnyRole("ADMIN", "USER")
-
-                // ===== Mọi request còn lại cần đăng nhập =====
-                .anyRequest().authenticated()
-            )
-            // ===== Form Login =====
-            .formLogin(form -> form
-                .loginPage("/auth/login")               // Trang login tùy chỉnh
-                .loginProcessingUrl("/auth/login")       // URL Spring Security xử lý POST login
-                .defaultSuccessUrl("/home", true)        // Redirect sau khi login thành công
-                .failureUrl("/auth/login?error=true")    // Redirect khi login thất bại
-                .usernameParameter("username")           // Tên field username trong form
-                .passwordParameter("password")           // Tên field password trong form
-                .permitAll()
-            )
-            // ===== Logout =====
-            .logout(logout -> logout
-                .logoutUrl("/auth/logout")               // URL POST để logout
-                .logoutSuccessUrl("/auth/login?logout=true")
-                .invalidateHttpSession(true)             // Xóa session
-                .deleteCookies("JSESSIONID")             // Xóa cookie
-                .permitAll()
-            )
-            // ===== Xử lý 403 Access Denied =====
-            .exceptionHandling(ex -> ex
-                .accessDeniedPage("/access-denied")
-            );
+                )
+                // ===== Form Login =====
+                .formLogin(form -> form
+                        .loginPage("/auth/login") // Trang login tùy chỉnh
+                        .loginProcessingUrl("/auth/login") // URL Spring Security xử lý POST login
+                        .defaultSuccessUrl("/home", true) // Redirect sau khi login thành công
+                        .failureUrl("/auth/login?error=true") // Redirect khi login thất bại
+                        .usernameParameter("username") // Tên field username trong form
+                        .passwordParameter("password") // Tên field password trong form
+                        .permitAll())
+                // ===== Logout =====
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout") // URL POST để logout
+                        .logoutSuccessUrl("/auth/login?logout=true")
+                        .invalidateHttpSession(true) // Xóa session
+                        .deleteCookies("JSESSIONID") // Xóa cookie
+                        .permitAll())
+                // ===== Xử lý 403 Access Denied =====
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/access-denied"));
 
         return http.build();
     }
