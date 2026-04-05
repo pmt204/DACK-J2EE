@@ -1,8 +1,8 @@
-packagecom. 
-import com.example.ticketbooking.service.CustomUserDetailsService;
+packagecom. import com.example.ticketbooking.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import rg.springfram
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -20,7 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * @EnableMethodSecurity: cho phép dùng @PreAuthorize trên method
  */
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity 
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -113,60 +113,3 @@ public class SecurityConfig {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
- 
-  
- 
- 
-
-
-
-
-
-
-    
-
-    
-     
-     
-     
-    
-    
-        
-    
-
-    
-     
-     
-    
-    
-        
-        
-        
-        
-    
-
-    
-     
-     
-    
-    
-        
-    
-
-    

@@ -3,7 +3,8 @@ package com.example.ticketbooking.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AirlineDto {

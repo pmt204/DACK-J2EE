@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
  * DTO cho form thêm/sửa chuyến bay (dành cho ADMIN).
  * Dùng airlineId thay vì chuỗi airline.
  */
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class FlightDto {

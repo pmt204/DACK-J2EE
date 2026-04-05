@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${isEdit} ? 'Sửa chuyến bay' : 'Thêm chuyến bay'">Form chuyến bay</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container mt-4 flex-grow-1">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3"
+                     th:classappend="${isEdit} ? 'bg-warning' : 'bg-success text-white'">
+                    <h4 class="mb-0">
+                        <i th:class="${isEdit} ? 'bi bi-pencil-square' : 'bi bi-plus-circle'"></i>
+                        <span th:text="${isEdit} ? 'Sửa thông tin chuyến bay' : 'Thêm chuyến bay mới'"></span>
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="${isEdit} ? @{/flights/edit/{id}(id=${flightDto.id})} : @{/flights/add}"
+                          th:object="${flightDto}" method="post">
+
+                        <div class="row g-3">
+                            <!-- Số hiệu + Hãng bay (dropdown) -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    Số hiệu chuyến bay <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" th:field="*{flightNumber}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('flightNumber')} ? 'is-invalid' : ''"
+                                       placeholder="Vd: VN101">
+                                <div class="invalid-feedback" th:errors="*{flightNumber}"></div>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">
+                                    Hãng hàng không <span class="text-danger">*</span>
+                                </label>
+                                <select th:field="*{airlineId}" class="form-select"
+                                        th:classappend="${#fields.hasErrors('airlineId')} ? 'is-invalid' : ''">
+                                    <option value="">-- Chọn hãng bay --</option>
+                                    <option th:each="a : ${airlines}"
+                                            th:value="${a.id}"
+                                            th:text="${a.airlineCode} + ' — ' + ${a.airlineName}">
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" th:errors="*{airlineId}"></div>
+                            </div>
+
+                            <!-- Điểm đi + điểm đến -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Điểm khởi hành <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" th:field="*{origin}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('origin')} ? 'is-invalid' : ''"
+                                       placeholder="Vd: Hà Nội (HAN)">
+                                <div class="invalid-feedback" th:errors="*{origin}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Điểm đến <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" th:field="*{destination}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('destination')} ? 'is-invalid' : ''"
+                                       placeholder="Vd: TP. Hồ Chí Minh (SGN)">
+                                <div class="invalid-feedback" th:errors="*{destination}"></div>
+                            </div>
+
+                            <!-- Giờ bay -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Thời gian khởi hành <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local" th:field="*{departureTime}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('departureTime')} ? 'is-invalid' : ''">
+                                <div class="invalid-feedback" th:errors="*{departureTime}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Thời gian đến <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local" th:field="*{arrivalTime}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('arrivalTime')} ? 'is-invalid' : ''">
+                                <div class="invalid-feedback" th:errors="*{arrivalTime}"></div>
+                            </div>
+
+                            <!-- Giá + Số ghế -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    Giá vé (VNĐ) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" th:field="*{price}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('price')} ? 'is-invalid' : ''"
+                                       placeholder="Vd: 1200000" min="1000" step="1000">
+                                <div class="invalid-feedback" th:errors="*{price}"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    Số ghế trống <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" th:field="*{availableSeats}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('availableSeats')} ? 'is-invalid' : ''"
+                                       placeholder="Vd: 120" min="0">
+                                <div class="invalid-feedback" th:errors="*{availableSeats}"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Trạng thái</label>
+                                <select th:field="*{status}" class="form-select">
+                                    <option value="AVAILABLE">Còn chỗ</option>
+                                    <option value="FULL">Hết chỗ</option>
+                                    <option value="CANCELLED">Đã hủy</option>
+                                    <option value="DELAYED">Bị trễ</option>
+                                </select>
+                            </div>
+
+                            <!-- Mô tả -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Mô tả (tùy chọn)</label>
+                                <textarea th:field="*{description}" class="form-control" rows="2"
+                                          placeholder="Hạng ghế, dịch vụ đặc biệt..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn px-4"
+                                    th:classappend="${isEdit} ? 'btn-warning' : 'btn-success'">
+                                <i th:class="${isEdit} ? 'bi bi-save' : 'bi bi-plus-circle'"></i>
+                                <span th:text="${isEdit} ? 'Cập nhật' : 'Thêm mới'"></span>
+                            </button>
+                            <a th:href="@{/flights/list}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-3 text-center mt-auto">
+    <small class="text-muted">&copy; 2025 VietTicket</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
