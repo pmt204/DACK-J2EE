@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý người dùng - VietTicket</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container mt-4 flex-grow-1">
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-people text-primary"></i> Quản lý người dùng
+    </h2>
+
+    <!-- Thông báo thành công -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong><i class="bi bi-list"></i> Danh sách người dùng</strong>
+            <span class="badge bg-primary" th:text="${#lists.size(users)} + ' người dùng'"></span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên đăng nhập</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Lý do ban</th>
+                            <th>Hết hạn ban</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${users}">
+                            <td th:text="${u.id}"></td>
+                            <td class="fw-bold" th:text="${u.username}"></td>
+                            <td th:text="${u.email}"></td>
+                            <td>
+                                <span th:each="role : ${u.roles}"
+                                      class="badge me-1"
+                                      th:classappend="${role.name == 'ROLE_ADMIN'} ? 'bg-danger' : 'bg-info'"
+                                      th:text="${role.name == 'ROLE_ADMIN'} ? 'ADMIN' : 'USER'">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" th:if="${u.enabled}">
+                                    <i class="bi bi-check-circle"></i> Hoạt động
+                                </span>
+                                <span th:unless="${u.enabled}">
+                                    <span class="badge bg-danger" th:if="${u.banExpiry == null}">
+                                        <i class="bi bi-x-circle"></i> Ban vĩnh viễn
+                                    </span>
+                                    <span class="badge bg-warning text-dark" th:if="${u.banExpiry != null}">
+                                        <i class="bi bi-clock"></i> Ban tạm thời
+                                    </span>
+                                </span>
+                            </td>
+                            <td>
+                                <small th:if="${u.banReason}" th:text="${u.banReason}" class="text-danger"></small>
+                                <small th:unless="${u.banReason}" class="text-muted">—</small>
+                            </td>
+                            <td>
+                                <span th:if="${u.banExpiry != null}" class="small"
+                                      th:text="${#temporals.format(u.banExpiry, 'dd/MM/yyyy HH:mm')}"></span>
+                                <span th:if="${!u.enabled && u.banExpiry == null}" class="small text-danger">Vĩnh viễn</span>
+                                <span th:if="${u.enabled}" class="small text-muted">—</span>
+                            </td>
+                            <td class="text-center">
+                                <!-- User đang hoạt động → Nút Ban -->
+                                <div th:if="${u.enabled}">
+                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#banModal' + ${u.id}">
+                                        <i class="bi bi-slash-circle"></i> Ban
+                                    </button>
+                                </div>
+
+                                <!-- User đang bị ban → Nút Gia hạn + Mở khóa -->
+                                <div th:unless="${u.enabled}" class="d-flex gap-1 justify-content-center">
+                                    <button type="button" class="btn btn-outline-warning btn-sm"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#extendModal' + ${u.id}">
+                                        <i class="bi bi-clock-history"></i> Gia hạn
+                                    </button>
+                                    <form th:action="@{/admin/users/unban/{id}(id=${u.id})}"
+                                          method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-unlock"></i> Gỡ ban
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="8" class="text-center text-muted py-3">
+                                Chưa có người dùng nào
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Modal Ban cho từng user -->
+<div th:each="u : ${users}">
+    <!-- Modal Ban -->
+    <div class="modal fade" th:id="'banModal' + ${u.id}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/users/ban/{id}(id=${u.id})}" method="post">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-slash-circle"></i> Ban tài khoản:
+                            <strong th:text="${u.username}"></strong>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thời hạn ban:</label>
+                            <select name="duration" class="form-select">
+                                <option value="1">1 ngày</option>
+                                <option value="3">3 ngày</option>
+                                <option value="7" selected>7 ngày</option>
+                                <option value="14">14 ngày</option>
+                                <option value="30">30 ngày</option>
+                                <option value="90">90 ngày</option>
+                                <option value="0">Vĩnh viễn</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Lý do ban:</label>
+                            <select class="form-select mb-2" onchange="if(this.value) document.getElementById('reason-' + this.dataset.uid).value = this.value"
+                                    th:data-uid="${u.id}">
+                                <option value="">-- Chọn lý do --</option>
+                                <option value="Vi phạm quy định sử dụng">Vi phạm quy định sử dụng</option>
+                                <option value="Spam đặt vé">Spam đặt vé</option>
+                                <option value="Sử dụng thông tin giả mạo">Sử dụng thông tin giả mạo</option>
+                                <option value="Hành vi gian lận">Hành vi gian lận</option>
+                                <option value="Quấy rối người dùng khác">Quấy rối người dùng khác</option>
+                            </select>
+                            <input type="text" name="reason" class="form-control"
+                                   th:id="'reason-' + ${u.id}"
+                                   value="Vi phạm quy định sử dụng"
+                                   placeholder="Hoặc nhập lý do khác..." required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-slash-circle"></i> Xác nhận Ban
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gia hạn Ban -->
+    <div class="modal fade" th:id="'extendModal' + ${u.id}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/users/extend-ban/{id}(id=${u.id})}" method="post">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="bi bi-clock-history"></i> Gia hạn ban:
+                            <strong th:text="${u.username}"></strong>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div th:if="${u.banReason}" class="alert alert-info small">
+                            <strong>Lý do ban hiện tại:</strong>
+                            <span th:text="${u.banReason}"></span>
+                        </div>
+                        <div th:if="${u.banExpiry != null}" class="alert alert-warning small">
+                            <strong>Hết hạn hiện tại:</strong>
+                            <span th:text="${#temporals.format(u.banExpiry, 'dd/MM/yyyy HH:mm')}"></span>
+                        </div>
+                        <div th:if="${u.banExpiry == null}" class="alert alert-danger small">
+                            <strong>Đang ban vĩnh viễn</strong> — gia hạn sẽ chuyển sang ban có thời hạn
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thêm số ngày:</label>
+                            <select name="extraDays" class="form-select">
+                                <option value="1">+ 1 ngày</option>
+                                <option value="3">+ 3 ngày</option>
+                                <option value="7" selected>+ 7 ngày</option>
+                                <option value="14">+ 14 ngày</option>
+                                <option value="30">+ 30 ngày</option>
+                                <option value="90">+ 90 ngày</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-clock-history"></i> Xác nhận gia hạn
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-3 text-center mt-auto">
+    <small class="text-muted">&copy; 2025 VietTicket Admin</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
