@@ -1,8 +1,9 @@
-packagecom. import com.example.ticketbooking.service.CustomUserDetailsService;
+package com.example.ticketbooking.config;
+
+import com.example.ticketbooking.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import rg.springfram
-
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -16,11 +17,11 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Cấu hình Spring Security cho toàn bộ ứng dụng.
  *
- * @EnableWebSecurity   : kích hoạt Spring Security
+ * @EnableWebSecurity : kích hoạt Spring Security
  * @EnableMethodSecurity: cho phép dùng @PreAuthorize trên method
  */
 @Configuration
-@EnableWebSecurity 
+@EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -53,15 +54,15 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
+}
 
-    /**
-     * Cấu hình filter chain: định nghĩa quy tắc phân quyền URL, form login, logout.
-     */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authenticationProvider(authenticationProvider())
+/
+
+  
+
+   @   
+
+henticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
                 // ===== Public URLs - không cần đăng nhập =====
                 .requestMatchers(
@@ -104,12 +105,8 @@ public class SecurityConfig {
                 .permitAll()
             )
             // ===== Xử lý 403 Access Denied =====
-            .exceptionHandling(ex -> ex
-                .accessDeniedPage("/access-denied")
-            );
+            .exceptionHandli
 
         return http.build();
     }
 }
-
-
