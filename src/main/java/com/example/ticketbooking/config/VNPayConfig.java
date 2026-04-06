@@ -35,6 +35,7 @@ public class VNPayConfig {
         return sb.toString();
     }
 
+    // 1
     // Hàm lấy IP của người dùng
     public static String getIpAddress(HttpServletRequest request) {
         String ipAdress;
